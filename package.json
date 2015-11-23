@@ -1,0 +1,38 @@
+{
+  "name": "geoacorda-js-api",
+  "version": "0.0.1",
+  "description": "JavaScript API for geoacorda",
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/camptocamp/agridea_geoacorda.git"
+  },
+  "license": "MIT",
+  "dependencies": {
+  },
+  "devDependencies": {
+    "angular": "1.4.7",
+    "angular-jsdoc": "^1.2.1",
+    "angular-mocks": "1.4.7",
+    "bootstrap": "^3.3.0",
+    "clean-css": "^2.2.7",
+    "d3": "^3.5.5",
+    "fs-extra": "~0.8.1",
+    "graceful-fs": "~3.0.2",
+    "jquery": "2.1.4",
+    "jsdoc": "3.4.0",
+    "jshint": "~2.5.1",
+    "karma": "^0.12.16",
+    "karma-jasmine": "^0.1.5",
+    "karma-phantomjs-launcher": "^0.1.4",
+    "less": "2.5.3",
+    "less-plugin-autoprefix": "^1.5.1",
+    "nomnom": "~1.6.2",
+    "openlayers": "openlayers/ol3#master",
+    "ngeo": "camptocamp/ngeo#master",
+    "phantomjs": "~1.9.7-5",
+    "temp": "~0.7.0",
+    "typeahead.js": "0.11.1",
+    "walk": "~2.3.3"
+  }
+}

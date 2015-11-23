@@ -1,0 +1,7 @@
+/.build
+/node_modules
+/examples/simple.min.js
+/dist
+/contribs/gmf/apps/**/build
+*.pyc
+.*.swp
