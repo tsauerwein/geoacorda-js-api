@@ -4,22 +4,9 @@
 goog.provide('geoacorda');
 goog.provide('geoacorda.Map');
 
-goog.require('goog.asserts');
-goog.require('goog.net.XhrIo');
-goog.require('ol.Collection');
-goog.require('ol.Map');
+goog.require('geoacorda.app.MainController');
+goog.require('ngeo.mapDirective');
 goog.require('ol.Object');
-goog.require('ol.View');
-goog.require('ol.format.GeoJSON');
-goog.require('ol.interaction.Modify');
-goog.require('ol.interaction.Select');
-goog.require('ol.layer.Tile');
-goog.require('ol.layer.Vector');
-goog.require('ol.source.OSM');
-goog.require('ol.source.Vector');
-goog.require('ol.style.Fill');
-goog.require('ol.style.Stroke');
-goog.require('ol.style.Style');
 
 
 
@@ -35,39 +22,18 @@ geoacorda.Map = function(opt_options) {
 
   var options = goog.isDef(opt_options) ? opt_options : {};
 
-  goog.base(this, options);
+  goog.base(this, {});
 
-  this.map = this.createMap_(options.element);
-  this.parcelSource = null;
-  this.parcelLayer = null;
-  this.parcelsLayer = null;
-  this.parcel = null;
-  this.selectInteraction = null;
-  this.modifyInteraction = null;
+  var appElement = angular.element(options.element);
+  appElement.attr('ng-controller', 'MainController as ctrl');
+  appElement.append(
+      angular.element('<div ngeo-map="ctrl.map" class="map"></div>'));
+  angular.bootstrap(appElement[0], ['app']);
+
+  this.controller = appElement.controller();
 
 };
 goog.inherits(geoacorda.Map, ol.Object);
-
-
-/**
- * @param {string|Element} element The map element.
- * @return {ol.Map} The map.
- * @private
- */
-geoacorda.Map.prototype.createMap_ = function(element) {
-  return new ol.Map({
-    target: element,
-    layers: [
-      new ol.layer.Tile({
-        source: new ol.source.OSM()
-      })
-    ],
-    view: new ol.View({
-      center: [738496, 5864210],
-      zoom: 12
-    })
-  });
-};
 
 
 /**
@@ -86,43 +52,7 @@ geoacorda.Map.prototype.createMap_ = function(element) {
  */
 geoacorda.Map.prototype.showParcel =
     function(parcelId, farmId, auth, onLoad, onModify) {
-  this.resetParcelLayer_();
-  this.disableEditing_();
-  this.addParcelsLayer_(farmId, auth);
-
-  // fake making a request
-  goog.net.XhrIo.send('data/parcel.geojson', goog.bind(function(e) {
-    var xhr = /** @type {goog.net.XhrIo} */ (e.target);
-    if (!xhr.isSuccess()) {
-      onLoad('error', null);
-    }
-    var response = xhr.getResponseJson();
-    goog.asserts.assert(response !== undefined);
-    var format = new ol.format.GeoJSON();
-    var features = format.readFeatures(response,
-        {featureProjection: 'EPSG:3857'});
-
-    this.parcel = features[0];
-    this.parcelSource = new ol.source.Vector({
-      features: features
-    });
-    this.parcelLayer = new ol.layer.Vector({
-      source: this.parcelSource,
-      style: new ol.style.Style({
-        fill: new ol.style.Fill({
-          color: [235, 84, 42, 0.5]
-        }),
-        stroke: new ol.style.Stroke({
-          color: [235, 84, 42, 1],
-          width: 3
-        })
-      })
-    });
-    this.map.addLayer(this.parcelLayer);
-    this.map.getView().fit(this.parcel.getGeometry(), this.map.getSize());
-    this.enableEditing_(parcelId, this.parcel, onModify);
-    onLoad('success', this.parcel);
-  }, this));
+  this.controller.showParcel(parcelId, farmId, auth, onLoad, onModify);
 };
 
 
@@ -135,17 +65,7 @@ geoacorda.Map.prototype.showParcel =
  *    parcel as second argument.
  */
 geoacorda.Map.prototype.saveParcel = function(auth, callback) {
-  if (this.parcel === null) {
-    callback('error', null);
-    return;
-  }
-  // make a request to save the parcel
-  callback('success', {
-    geometry: this.parcel.getGeometry(),
-    area: 1234,
-    geometrySau: this.parcel.getGeometry(),
-    areaSau: 2345
-  });
+  this.controller.saveParcel(auth, callback);
 };
 
 
@@ -158,41 +78,7 @@ geoacorda.Map.prototype.saveParcel = function(auth, callback) {
  * @param {geoacordax.AuthOptions} auth Authentication.
  */
 geoacorda.Map.prototype.showParcels = function(farmId, auth) {
-  this.resetParcelLayer_();
-  this.disableEditing_();
-  this.addParcelsLayer_(farmId, auth);
-
-  var parcelsSource = this.parcelsLayer.getSource();
-  parcelsSource.once('change', goog.bind(function() {
-    if (parcelsSource.getFeatures().length > 0) {
-      this.map.getView().fit(parcelsSource.getExtent(), this.map.getSize());
-    }
-  }, this));
-};
-
-
-/**
- * @param {string} farmId The farm id.
- * @param {geoacordax.AuthOptions} auth Authentication.
- * @private
- */
-geoacorda.Map.prototype.addParcelsLayer_ = function(farmId, auth) {
-  this.parcelsLayer = new ol.layer.Vector({
-    source: new ol.source.Vector({
-      url: 'data/parcels.geojson',
-      format: new ol.format.GeoJSON()
-    }),
-    style: new ol.style.Style({
-      fill: new ol.style.Fill({
-        color: [81, 125, 67, 0.3]
-      }),
-      stroke: new ol.style.Stroke({
-        color: [81, 125, 67, 0.8],
-        width: 2
-      })
-    })
-  });
-  this.map.addLayer(this.parcelsLayer);
+  this.controller.showParcels(farmId, auth);
 };
 
 
@@ -202,62 +88,5 @@ geoacorda.Map.prototype.addParcelsLayer_ = function(farmId, auth) {
  * @param {string} communeId The commune id.
  */
 geoacorda.Map.prototype.zoomToCommune = function(communeId) {
-  // make request to get extent
-  this.map.getView().fit(
-      ol.proj.transformExtent(
-          [6.579, 46.574, 6.63, 46.604], 'EPSG:4326', 'EPSG:3857'),
-      this.map.getSize());
-};
-
-
-/**
- * @param {string} parcelId The parcel id.
- * @param {ol.Feature} parcel The parcel to edit.
- * @param {function(string, number, ol.geom.Geometry, boolean)} onModify Called
- *    when the geometry has changed.
- * @private
- */
-geoacorda.Map.prototype.enableEditing_ = function(parcelId, parcel, onModify) {
-  var modifyFeatures = new ol.Collection([parcel]);
-  this.selectInteraction = new ol.interaction.Select({
-    features: modifyFeatures,
-    layers: [this.parcelLayer]
-  });
-  this.map.addInteraction(this.selectInteraction);
-  this.modifyInteraction = new ol.interaction.Modify({
-    features: modifyFeatures
-  });
-  this.modifyInteraction.on('modifyend', function() {
-    var geom = parcel.getGeometry();
-    goog.asserts.assert(geom !== undefined);
-    onModify(parcelId, 1234, geom, false);
-  });
-  this.map.addInteraction(this.modifyInteraction);
-};
-
-
-/**
- * @private
- */
-geoacorda.Map.prototype.disableEditing_ = function() {
-  if (this.modifyInteraction !== null) {
-    this.map.removeInteraction(this.selectInteraction);
-    this.map.removeInteraction(this.modifyInteraction);
-  }
-};
-
-
-/**
- * @private
- */
-geoacorda.Map.prototype.resetParcelLayer_ = function() {
-  if (this.parcelSource !== null) {
-    this.map.removeLayer(this.parcelLayer);
-    this.parcelSource = null;
-    this.parcelLayer = null;
-    this.parcel = null;
-  }
-  if (this.parcelsLayer !== null) {
-    this.map.removeLayer(this.parcelsLayer);
-  }
+  this.controller.zoomToCommune(communeId);
 };

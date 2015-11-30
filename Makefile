@@ -141,7 +141,7 @@ dist/geoacorda.css: node_modules/openlayers/css/ol.css .build/node_modules.times
 	./node_modules/.bin/cleancss $< > $@
 
 .PHONY: examples-hosted
-examples-hosted: dist/geoacorda.js dist/geoacorda-debug.js dist/geoacorda.css .build/examples-hosted/data .build/examples-hosted/lib/geoacorda.js .build/examples-hosted/lib/geoacorda-debug.js .build/examples-hosted/lib/geoacorda.css .build/examples-hosted/lib/angular.min.js .build/examples-hosted/lib/jquery.min.js .build/examples-hosted/simple.js .build/examples-hosted/simple.html .build/examples-hosted/apidoc
+examples-hosted: dist/geoacorda.js dist/geoacorda-debug.js dist/geoacorda.css .build/examples-hosted/data .build/examples-hosted/lib/geoacorda.js .build/examples-hosted/lib/geoacorda-debug.js .build/examples-hosted/lib/geoacorda.css .build/examples-hosted/lib/angular.min.js .build/examples-hosted/lib/proj4.js .build/examples-hosted/lib/jquery.min.js .build/examples-hosted/simple.js .build/examples-hosted/simple.html .build/examples-hosted/apidoc
 
 .build/examples/%.min.js: .build/examples/%.json \
 		$(SRC_JS_FILES) \
@@ -191,6 +191,10 @@ examples-hosted: dist/geoacorda.js dist/geoacorda-debug.js dist/geoacorda.css .b
 	mkdir -p $(dir $@)
 	cp $< $@
 
+.build/examples-hosted/lib/proj4.js: node_modules/proj4/dist/proj4.js
+	mkdir -p $(dir $@)
+	cp $< $@
+
 .build/examples-hosted/lib/watchwatchers.js: utils/watchwatchers.js
 	mkdir -p $(dir $@)
 	cp $< $@
@@ -219,6 +223,7 @@ node_modules/angular/angular.min.js: .build/node_modules.timestamp
 		-e 's|\.\./node_modules/angular/angular.js|lib/angular.min.js|' \
 		-e 's|\.\./node_modules/d3/d3.js|lib/d3.min.js|' \
 		-e 's|\.\./node_modules/typeahead.js/dist/typeahead.bundle.js|lib/typeahead.bundle.min.js|' \
+		-e 's|\.\./node_modules/proj4/dist/proj4-src.js|lib/proj4.js|' \
 		-e 's|/@?main=$*.js|$*.js|' \
 		-e 's|\.\./utils/watchwatchers.js|lib/watchwatchers.js|' \
 		-e '/$*.js/i\    <script src="lib/geoacorda.js"></script>' $< > $@

@@ -4,7 +4,7 @@ goog.require('geoacorda');
 
 var auth = {role: 'user', token: 'ABCD'};
 var map = new geoacorda.Map({
-  element: 'map',
+  element: '#map',
   url: 'https://geoacorda.ch/api'
 });
 
