@@ -97,7 +97,7 @@ gh-pages: .build/ngeo-$(GITHUB_USERNAME)-gh-pages \
 	echo "skip clone"
 
 .build/gjslint.timestamp: $(SRC_JS_FILES) $(EXPORTS_JS_FILES) $(EXAMPLES_JS_FILES) $(GMF_SRC_JS_FILES) $(GMF_EXAMPLES_JS_FILES) $(GMF_APPS_MOBILE_JS_FILES)
-	.build/python-venv/bin/gjslint --jslint_error=all --strict --custom_jsdoc_tags=event,fires,function,classdesc,api,observable,example,module $?
+	.build/python-venv/bin/gjslint --jslint_error=all --strict --custom_jsdoc_tags=event,fires,function,classdesc,api,observable,example,module,ngdoc,ngname $?
 	touch $@
 
 .build/jshint.timestamp: $(SRC_JS_FILES) $(EXPORTS_JS_FILES) $(EXAMPLES_JS_FILES) $(GMF_SRC_JS_FILES) $(GMF_EXAMPLES_JS_FILES) $(GMF_APPS_MOBILE_JS_FILES)
@@ -141,7 +141,7 @@ dist/geoacorda.css: node_modules/openlayers/css/ol.css .build/node_modules.times
 	./node_modules/.bin/cleancss $< > $@
 
 .PHONY: examples-hosted
-examples-hosted: dist/geoacorda.js dist/geoacorda-debug.js dist/geoacorda.css .build/examples-hosted/data .build/examples-hosted/lib/geoacorda.js .build/examples-hosted/lib/geoacorda-debug.js .build/examples-hosted/lib/geoacorda.css .build/examples-hosted/lib/angular.min.js .build/examples-hosted/lib/jquery.min.js .build/examples-hosted/simple.js .build/examples-hosted/simple.html
+examples-hosted: dist/geoacorda.js dist/geoacorda-debug.js dist/geoacorda.css .build/examples-hosted/data .build/examples-hosted/lib/geoacorda.js .build/examples-hosted/lib/geoacorda-debug.js .build/examples-hosted/lib/geoacorda.css .build/examples-hosted/lib/angular.min.js .build/examples-hosted/lib/jquery.min.js .build/examples-hosted/simple.js .build/examples-hosted/simple.html .build/examples-hosted/apidoc
 
 .build/examples/%.min.js: .build/examples/%.json \
 		$(SRC_JS_FILES) \
@@ -321,9 +321,12 @@ $(EXTERNS_JQUERY):
 	.build/python-venv/bin/python node_modules/ngeo/buildtools/closure/depswriter.py \
 		--root_with_prefix="src ../../../../../../../../../src" --output_file=$@
 
-.build/apidoc-%: .build/node_modules.timestamp jsdoc.json $(SRC_JS_FILES)
+.build/jsdocOl3.js: jsdoc/get-ol3-doc-ref.js .build/node_modules.timestamp
+	node $< > $@
+
+.build/examples-hosted/apidoc: .build/node_modules.timestamp jsdoc.json .build/jsdocOl3.js $(SRC_JS_FILES)
 	rm -rf $@
-	./node_modules/.bin/jsdoc -c jsdoc.json --destination $@
+	./node_modules/.bin/jsdoc -c jsdoc/config.json --destination $@
 
 contribs/gmf/apps/mobile/build/build.js: contribs/gmf/apps/mobile/build.json \
 		$(EXTERNS_FILES) \

@@ -1,5 +1,6 @@
 /**
  * @type {Object}
+ * @private
  */
 var geoacordax;
 
