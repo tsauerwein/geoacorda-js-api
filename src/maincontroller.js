@@ -23,6 +23,34 @@ goog.require('ol.style.Stroke');
 goog.require('ol.style.Style');
 
 
+/**
+ * @const
+ * @type {string}
+ */
+geoacorda.mainTemplateUrl = '../src/partials/main.html';
+
+
+geoacorda.app.module.value(
+    'geoacordaMainTemplateUrl', geoacorda.mainTemplateUrl);
+
+
+/**
+ * @param {string} geoacordaMainTemplateUrl Url to main template.
+ * @return {angular.Directive} The Directive Definition Object.
+ * @ngInject
+ */
+geoacorda.app.mainDirective = function(geoacordaMainTemplateUrl) {
+  return {
+    bindToController: true,
+    controller: 'MainController',
+    controllerAs: 'ctrl',
+    replace: false,
+    templateUrl: geoacordaMainTemplateUrl
+  };
+};
+geoacorda.app.module.directive('appMap', geoacorda.app.mainDirective);
+
+
 
 /**
  * @constructor
@@ -54,6 +82,7 @@ geoacorda.app.module.controller('MainController', geoacorda.app.MainController);
  */
 geoacorda.app.MainController.prototype.createMap_ = function() {
   var sourceTopo = new gmf.source.Swisstopo({
+    // layer: 'ch.swisstopo.swissimage',
     layer: 'ch.swisstopo.pixelkarte-farbe',
     timestamp: '20151231',
     format: 'jpeg'

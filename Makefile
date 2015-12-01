@@ -1,6 +1,7 @@
 SRC_JS_FILES := $(shell find src -type f -name '*.js')
-SRC_DIRECTIVES_PARTIALS_FILES := $(shell find src/directives -type f -name '*.html')
 EXPORTS_JS_FILES := $(shell find exports -type f -name '*.js')
+PARTIAL_FILES = $(shell find src/partials -type f -name '*.html')
+
 
 NGEO_SRC_JS_FILES := $(shell find node_modules/ngeo/src -type f -name '*.js')
 NGEO_SRC_DIRECTIVES_PARTIALS_FILES := $(shell find node_modules/ngeo/src/directives -type f -name '*.html')
@@ -104,9 +105,13 @@ gh-pages: .build/ngeo-$(GITHUB_USERNAME)-gh-pages \
 	./node_modules/.bin/jshint --verbose $?
 	touch $@
 
+.build/templatecache.js: buildtools/templatecache.mako.js .build/python-venv/bin/mako-render $(PARTIAL_FILES)
+	PYTHONIOENCODING=UTF-8 .build/python-venv/bin/mako-render --var "partials=$(addprefix ../,$(PARTIAL_FILES))" --var "basedir=src" $< > $@
+
 dist/geoacorda.js: buildtools/geoacorda.json \
 		$(EXTERNS_FILES) \
 		$(SRC_JS_FILES) \
+		.build/templatecache.js \
 		$(EXPORTS_JS_FILES) \
 		$(NGEO_SRC_JS_FILES) \
 		$(NGEO_EXPORTS_JS_FILES) \
@@ -122,6 +127,7 @@ dist/geoacorda.js: buildtools/geoacorda.json \
 dist/geoacorda-debug.js: buildtools/geoacorda-debug.json \
 		$(EXTERNS_FILES) \
 		$(SRC_JS_FILES) \
+		.build/templatecache.js \
 		$(EXPORTS_JS_FILES) \
 		$(NGEO_SRC_JS_FILES) \
 		$(NGEO_EXPORTS_JS_FILES) \
@@ -304,10 +310,6 @@ $(EXTERNS_JQUERY):
 	.build/python-venv/bin/pip install "http://closure-linter.googlecode.com/files/closure_linter-latest.tar.gz"
 	touch $@
 
-.build/python-venv/bin/mako-render: .build/python-venv
-	.build/python-venv/bin/pip install "Mako==1.0.0" "htmlmin==0.1.10"
-	touch $@
-
 .build/beautifulsoup4.timestamp: .build/python-venv
 	.build/python-venv/bin/pip install "beautifulsoup4==4.3.2"
 	touch $@
@@ -344,6 +346,10 @@ contribs/gmf/apps/mobile/build/build.css: %/build/build.css: $(GMF_APPS_MOBILE_L
 		.build/node_modules.timestamp
 	mkdir -p $(dir $@)
 	./node_modules/.bin/lessc $*/less/main.less $@ --autoprefix
+
+.build/python-venv/bin/mako-render: .build/python-venv
+	.build/python-venv/bin/pip install "Mako==1.0.0" "htmlmin==0.1.10"
+	touch $@
 
 .PHONY: clean
 clean:

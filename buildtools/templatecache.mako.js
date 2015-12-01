@@ -19,12 +19,12 @@
       _partials[p] = content
 %>\
 /**
- * @fileoverview ngeo template cache.
+ * @fileoverview geoacorda template cache.
  *
  * GENERATED FILE. DO NOT EDIT.
  */
 
-goog.require('ngeo');
+goog.require('geoacorda.app');
 
 (function() {
   /**
@@ -37,5 +37,5 @@ goog.require('ngeo');
   %endfor
   };
 
-  ngeoModule.run(runner);
+  geoacorda.app.module.run(runner);
 })();

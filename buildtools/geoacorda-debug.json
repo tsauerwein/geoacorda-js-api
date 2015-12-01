@@ -5,6 +5,7 @@
     "node_modules/openlayers/build/ol.ext/*.js",
     "node_modules/ngeo/src/**/*.js",
     "node_modules/ngeo/contribs/gmf/src/**/*.js",
-    "src/**/*.js"
+    "src/**/*.js",
+    ".build/templatecache.js"
   ]
 }

@@ -5,6 +5,7 @@ goog.provide('geoacorda');
 goog.provide('geoacorda.Map');
 
 goog.require('geoacorda.app.MainController');
+goog.require('goog.asserts');
 goog.require('ngeo.mapDirective');
 goog.require('ol.Object');
 
@@ -25,13 +26,9 @@ geoacorda.Map = function(opt_options) {
   goog.base(this, {});
 
   var appElement = angular.element(options.element);
-  appElement.attr('ng-controller', 'MainController as ctrl');
-  appElement.append(
-      angular.element('<div ngeo-map="ctrl.map" class="map"></div>'));
+  this.controllerElement = angular.element('<div app-map=""></div>');
+  appElement.append(this.controllerElement);
   angular.bootstrap(appElement[0], ['app']);
-
-  this.controller = appElement.controller();
-
 };
 goog.inherits(geoacorda.Map, ol.Object);
 
@@ -52,7 +49,7 @@ goog.inherits(geoacorda.Map, ol.Object);
  */
 geoacorda.Map.prototype.showParcel =
     function(parcelId, farmId, auth, onLoad, onModify) {
-  this.controller.showParcel(parcelId, farmId, auth, onLoad, onModify);
+  this.getController_().showParcel(parcelId, farmId, auth, onLoad, onModify);
 };
 
 
@@ -65,7 +62,7 @@ geoacorda.Map.prototype.showParcel =
  *    parcel as second argument.
  */
 geoacorda.Map.prototype.saveParcel = function(auth, callback) {
-  this.controller.saveParcel(auth, callback);
+  this.getController_().saveParcel(auth, callback);
 };
 
 
@@ -78,7 +75,7 @@ geoacorda.Map.prototype.saveParcel = function(auth, callback) {
  * @param {geoacordax.AuthOptions} auth Authentication.
  */
 geoacorda.Map.prototype.showParcels = function(farmId, auth) {
-  this.controller.showParcels(farmId, auth);
+  this.getController_().showParcels(farmId, auth);
 };
 
 
@@ -88,5 +85,18 @@ geoacorda.Map.prototype.showParcels = function(farmId, auth) {
  * @param {string} communeId The commune id.
  */
 geoacorda.Map.prototype.zoomToCommune = function(communeId) {
-  this.controller.zoomToCommune(communeId);
+  this.getController_().zoomToCommune(communeId);
+};
+
+
+/**
+ * Get the main controller.
+ *
+ * @return {geoacorda.app.MainController} The controller.
+ * @private
+ */
+geoacorda.Map.prototype.getController_ = function() {
+  var controller = this.controllerElement.controller('appMap');
+  goog.asserts.assertInstanceof(controller, geoacorda.app.MainController);
+  return controller;
 };
